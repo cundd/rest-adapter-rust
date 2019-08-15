@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "rest_adapter",
+    "rest_adapter_test",
+]

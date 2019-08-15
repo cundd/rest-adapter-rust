@@ -1,0 +1,21 @@
+[package]
+name = "rest_adapter_test"
+version = "0.1.0"
+authors = ["Daniel Corn <info@cundd.net>"]
+edition = "2018"
+
+[[bin]]
+name = "rest_adapter_test"
+path = "src/bin.rs"
+
+[dependencies]
+rest_adapter = { path = "../rest_adapter" }
+clap = "^2.33.0"
+ansi_term = "^0.11.0"
+term = "^0.5.2"
+serde = "^1.0.0"
+serde_json = "^1.0.0"
+
+[dev-dependencies]
+rest_adapter = { path = "../rest_adapter" }
+#serde = { version = "1.0", path = "../serde" }
