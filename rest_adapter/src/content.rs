@@ -1,8 +1,5 @@
-mod content_repository;
-
 use serde::Deserialize;
 use super::ID;
-pub use content_repository::ContentRepository;
 
 #[derive(Debug, Deserialize)]
 pub struct Content {

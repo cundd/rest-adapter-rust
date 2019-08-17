@@ -1,7 +1,4 @@
-mod pages_repository;
-
 use serde::Deserialize;
-pub use pages_repository::PageRepository;
 use crate::ID;
 
 #[derive(Debug, Deserialize)]

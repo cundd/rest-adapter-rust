@@ -13,6 +13,6 @@ fn run() -> Result<Vec<Person>> {
     let config = AdapterConfiguration::from_url("http://base.url.tld/rest/")?;
     let rd = RestAdapter::new(config);
 
-    rd.find_all::<Person>("Iresults-RealEstate-Person")
+    rd.find_all::<Person>("Vendor-RealEstate-Person")
 }
 ```

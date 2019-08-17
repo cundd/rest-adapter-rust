@@ -1,15 +1,17 @@
 extern crate clap;
+extern crate simplelog;
 extern crate rest_adapter;
 
 mod ui;
 #[macro_use]
 mod cli_error;
 
-use clap::{Arg, App};
+use clap::{Arg, App, ArgMatches};
 use rest_adapter::*;
 
 use crate::cli_error::CliError;
 use serde_json::Value;
+use simplelog::TerminalMode;
 
 type Result<T> = std::result::Result<T, CliError>;
 
@@ -26,11 +28,20 @@ fn main() {
             .required(true))
         .arg(Arg::with_name("identifier")
             .help("Sets the identifier to fetch data for"))
+        .arg(Arg::with_name("v")
+            .short("v")
+            .multiple(true)
+            .help("Sets the level of verbosity"))
         .get_matches();
 
     let base_url = matches.value_of("base-url").unwrap();
     let resource_type = matches.value_of("type").unwrap();
     let raw_identifier = matches.value_of("identifier");
+
+    match configure_logging(&matches) {
+        Ok(_) => {}
+        Err(e) => ui::print_error(e),
+    }
 
     match run(base_url, resource_type, raw_identifier) {
         Ok(_) => {}
@@ -76,6 +87,30 @@ fn parse_identifier(raw_identifier: Option<&str>) -> Result<ID> {
     }
 }
 
+fn configure_logging(matches: &ArgMatches) -> Result<()> {
+    let log_level_filter = match matches.occurrences_of("v") {
+        1 => simplelog::LevelFilter::Info,
+        2 => simplelog::LevelFilter::Debug,
+        3 => simplelog::LevelFilter::Trace,
+        _ => simplelog::LevelFilter::Warn,
+    };
+
+    let mut loggers: Vec<Box<dyn simplelog::SharedLogger>> = vec![];
+    let mut config = simplelog::Config::default();
+    config.time_format = Some("%H:%M:%S%.3f");
+
+    if let Some(core_logger) = simplelog::TermLogger::new(log_level_filter, config, TerminalMode::Mixed) {
+        loggers.push(core_logger);
+    } else {
+        loggers.push(simplelog::SimpleLogger::new(log_level_filter, config));
+    }
+
+    match simplelog::CombinedLogger::init(loggers) {
+        Ok(_) => Ok(()),
+        Err(e) => throw!(CliError::input_error(format!("{}",e))),
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -84,21 +119,40 @@ mod tests {
     use rest_adapter::*;
     use serde::Deserialize;
 
-    #[derive(Deserialize)]
+    /// A HttpClient implementation that will always return the contents of the file
+    /// rest_adapter_test/resources/test-persons.json
+    #[derive(Clone)]
+    struct TestHttpClient {}
+
+    impl HttpClientTrait for TestHttpClient {
+        fn new() -> Self {
+            TestHttpClient {}
+        }
+
+        fn fetch(&self, _url: &Url) -> Result<String, Error> {
+            Ok(include_str!("../resources/test-persons.json").to_owned())
+        }
+    }
+
+    #[derive(Deserialize, Debug)]
     #[allow(unused)]
     struct Person {
         name: String
     }
 
     fn run() -> Result<Vec<Person>> {
-        let config = AdapterConfiguration::from_url("http://base.url.tld/rest/")?;
+        let config = AdapterConfiguration::from_url_and_client("http://base.url.tld/rest/", TestHttpClient {})?;
         let rd = RestAdapter::new(config);
 
-        rd.find_all::<Person>("Iresults-RealEstate-Person")
+        rd.find_all::<Person>("Vendor-RealEstate-Person")
     }
 
     #[test]
     fn test_find_all() {
-        assert_eq!(true, run().is_err());
+        let result = run();
+        assert!(result.is_ok(), "{}", result.unwrap_err());
+        let persons = result.unwrap();
+        assert_eq!(4, persons.len());
+        assert_eq!("Daniel", persons[0].name);
     }
 }

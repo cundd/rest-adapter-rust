@@ -30,13 +30,23 @@ impl Error {
         Error::new(Kind::BadRequestError(description.into()))
     }
 
-    pub fn data_error_with_url<S: Into<String>>(error: ReqwestError, url: S) -> Self {
-        let message = format!("Response data could not be parsed for URL '{}'", url.into());
-
-        Self::data_error_with_message(error, message)
+    pub fn not_found_error<S: Into<String>>(description: S) -> Self {
+        Error::new(Kind::NotFoundError(description.into()))
     }
 
-    pub fn data_error_with_message<S: Into<String>>(error: ReqwestError, message: S) -> Self {
+    pub fn data_error_with_url<E: StdError, S: Into<String>>(error: &E, url: S) -> Self {
+        let message = format!("Response data could not be parsed for URL '{}'", url.into());
+
+        Error::new(Kind::DataError(format!("{}: {}", message, error)))
+    }
+
+    pub fn reqwest_data_error_with_url<S: Into<String>>(error: ReqwestError, url: S) -> Self {
+        let message = format!("Response data could not be parsed for URL '{}'", url.into());
+
+        Self::reqwest_data_error_with_message(error, message)
+    }
+
+    pub fn reqwest_data_error_with_message<S: Into<String>>(error: ReqwestError, message: S) -> Self {
         let message_string = message.into();
 
         match error.get_ref() {
@@ -92,7 +102,7 @@ impl From<ReqwestError> for Error {
             _ if error.is_redirect() => Error::new(Kind::RedirectError(format!("Too many redirects for URL '{}'", error_url(&error)))),
             _ if error.is_client_error() => Error::new(Kind::BadRequestError(format!("Invalid request to {}", suffix))),
             _ if error.is_server_error() => Error::new(Kind::ServerError(format!("Server error for request to {}", suffix))),
-            _ if error.is_serialization() => Error::data_error_with_message(error, "Response data could not be parsed"),
+            _ if error.is_serialization() => Error::reqwest_data_error_with_message(error, "Response data could not be parsed"),
             _ => Error::from_error(error)
         };
 //        if error.is_http() {}
@@ -162,6 +172,7 @@ enum Kind {
     DataError(String),
     RedirectError(String),
     BadRequestError(String),
+    NotFoundError(String),
     ServerError(String),
 }
 
@@ -176,6 +187,7 @@ impl Display for Kind {
             Kind::DataError(s) => write!(f, "Data error: {}", s),
             Kind::RedirectError(s) => write!(f, "Redirect error: {}", s),
             Kind::BadRequestError(s) => write!(f, "Bad-Request error: {}", s),
+            Kind::NotFoundError(s) => write!(f, "Not-Found error: {}", s),
             Kind::ServerError(s) => write!(f, "Server error: {}", s),
         }
     }

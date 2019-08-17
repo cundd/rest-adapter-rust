@@ -1,12 +1,13 @@
 use reqwest::Url;
 use crate::prelude_internal::*;
+use crate::http_client::HttpClientTrait;
 
-pub struct UriBuilder {
-    config: AdapterConfiguration
+pub struct UriBuilder<C: HttpClientTrait + Clone> {
+    config: AdapterConfiguration<C>
 }
 
-impl UriBuilder {
-    pub fn new(config: AdapterConfiguration) -> Self {
+impl<C: HttpClientTrait + Clone> UriBuilder<C> {
+    pub fn new(config: AdapterConfiguration<C>) -> Self {
         UriBuilder { config }
     }
 
