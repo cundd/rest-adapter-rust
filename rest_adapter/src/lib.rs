@@ -21,5 +21,5 @@ pub use content::Content;
 pub use page::Page;
 pub use factory::Factory;
 pub use adapter::*;
-pub use http_client::HttpClientTrait;
+pub use http_client::*;
 pub use url::Url;
