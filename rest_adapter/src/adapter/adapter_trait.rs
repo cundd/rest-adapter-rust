@@ -6,10 +6,10 @@ pub trait AdapterTrait {
     /// Fetch all records of the given `resource_type`
     ///
     /// See also [https://rest.cundd.net/FAQ/#resource-type]
-    fn find_all<T: DeserializeOwned>(&self, resource_type: &str) -> Result<Vec<T>>;
+    fn find_all<T>(&self, resource_type: &str) -> Result<Vec<T>, Error> where T: DeserializeOwned;
 
     /// Fetch the record with the given `identifier` and `resource_type`
     ///
     /// See also [https://rest.cundd.net/FAQ/#resource-type]
-    fn find_by_identifier<T: DeserializeOwned>(&self, resource_type: &str, identifier: ID) -> Result<T>;
+    fn find_by_identifier<T>(&self, resource_type: &str, identifier: ID) -> Result<T, Error> where T: DeserializeOwned;
 }

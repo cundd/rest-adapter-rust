@@ -23,7 +23,7 @@ pub struct RestAdapter<C: HttpClientTrait + Clone> {
     config: AdapterConfiguration<C>,
 }
 
-impl<C: HttpClientTrait + Clone> RestAdapter<C> {
+impl<C> RestAdapter<C> where C: HttpClientTrait + Clone {
     pub fn new(config: AdapterConfiguration<C>) -> Self {
         let uri_builder = UriBuilder::new(&config);
 
@@ -31,12 +31,12 @@ impl<C: HttpClientTrait + Clone> RestAdapter<C> {
     }
 }
 
-impl<C: HttpClientTrait + Clone> AdapterTrait for RestAdapter<C> {
-    fn find_all<T: DeserializeOwned>(&self, resource_type: &str) -> Result<Vec<T>, Error> {
+impl<C> AdapterTrait for RestAdapter<C> where C: HttpClientTrait + Clone {
+    fn find_all<T>(&self, resource_type: &str) -> Result<Vec<T>, Error> where T: DeserializeOwned {
         self.config.http_client().fetch_json(self.uri_builder.build_uri_for_resource_type(resource_type)?)
     }
 
-    fn find_by_identifier<T: DeserializeOwned>(&self, resource_type: &str, identifier: ID) -> Result<T, Error> {
+    fn find_by_identifier<T>(&self, resource_type: &str, identifier: ID) -> Result<T, Error> where T: DeserializeOwned {
         self.config.http_client().fetch_json(self.uri_builder.build_uri_for_resource(resource_type, identifier)?)
     }
 }
