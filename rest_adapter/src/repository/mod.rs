@@ -6,22 +6,22 @@ use crate::error::*;
 use serde::export::PhantomData;
 use serde::de::DeserializeOwned;
 
-pub struct Repository<'a, T, C: HttpClientTrait + Clone> {
-    uri_builder: &'a UriBuilder<C>,
+pub struct Repository<'a, T: DeserializeOwned, C: HttpClientTrait + Clone> {
+    uri_builder: &'a UriBuilder,
     config: &'a AdapterConfiguration<C>,
-    p: PhantomData<T>,
+    target: PhantomData<T>,
 }
 
-impl<'a, T, C: HttpClientTrait + Clone> Repository<'a, T, C> {
-    pub fn new(config: &'a AdapterConfiguration<C>, uri_builder: &'a UriBuilder<C>) -> Self {
-        Self { uri_builder, config, p: PhantomData }
+impl<'a, T: DeserializeOwned, C: HttpClientTrait + Clone> Repository<'a, T, C> {
+    pub fn new(config: &'a AdapterConfiguration<C>, uri_builder: &'a UriBuilder) -> Self {
+        Self { uri_builder, config, target: PhantomData }
     }
 
-    pub fn find_all<T: DeserializeOwned>(&self, resource_type: &str) -> Result<Vec<T>, Error> {
+    pub fn find_all(&self, resource_type: &str) -> Result<Vec<T>, Error> {
         self.config.http_client().fetch_json(self.uri_builder.build_uri_for_resource_type(resource_type)?)
     }
 
-    pub fn find_by_identifier<T: DeserializeOwned>(&self, resource_type: &str, identifier: ID) -> Result<T, Error> {
+    pub fn find_by_identifier(&self, resource_type: &str, identifier: ID) -> Result<T, Error> {
         self.config.http_client().fetch_json(self.uri_builder.build_uri_for_resource(resource_type, identifier)?)
     }
 }

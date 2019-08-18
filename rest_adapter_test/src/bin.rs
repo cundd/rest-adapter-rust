@@ -55,13 +55,13 @@ fn run(base_url: &str, resource_type: &str, raw_identifier: Option<&str>) -> Res
     match resource_type.to_lowercase().as_str() {
         "content" => {
             let identifier = parse_identifier(raw_identifier)?;
-            let contents = Factory::new(&config).create_content_repository().find_by_pid(identifier)?;
+            let contents = Factory::new(config).create_content_repository().find_by_pid(identifier)?;
 
             ui::print_contents(contents)
         }
         "page" | "pages" => {
             let identifier = parse_identifier(raw_identifier)?;
-            let page = Factory::new(&config).create_page_repository().find_by_start_pid(identifier)?;
+            let page = Factory::new(config).create_page_repository().find_by_start_pid(identifier)?;
 
             ui::print_page_tree(&page)
         }
@@ -111,7 +111,6 @@ fn configure_logging(matches: &ArgMatches) -> Result<()> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     extern crate serde;
@@ -130,7 +129,7 @@ mod tests {
         }
 
         fn fetch(&self, _url: &Url) -> Result<String, Error> {
-            Ok(include_str!("../resources/test-persons.json").to_owned())
+            Ok(include_str!("../../tests/resources/test-persons.json").to_owned())
         }
     }
 

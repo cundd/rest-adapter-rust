@@ -2,13 +2,16 @@ use std::error::Error as StdError;
 use reqwest::Error as ReqwestError;
 use std::fmt::{Formatter, Display, Error as FmtError};
 
+/// Shorthand for REST adapter results
 pub type Result<T, E = Error> = ::std::result::Result<T, E>;
 
+/// Error type for errors raised in the REST adapter
 #[derive(Debug)]
 pub struct Error {
     inner: Box<dyn StdError>
 }
 
+#[doc(hidden)]
 impl Error {
     pub fn url_error<S: Into<String>>(description: S) -> Self {
         Error::new(Kind::UrlError(description.into()))
