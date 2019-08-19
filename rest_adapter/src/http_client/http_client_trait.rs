@@ -1,16 +1,11 @@
 use crate::error::*;
 use url::Url;
-use serde::de::DeserializeOwned;
 
+/// Definition of a HTTP client
 pub trait HttpClientTrait {
+    /// Return a new client instance
     fn new() -> Self;
 
-    fn fetch_json<T: DeserializeOwned>(&self, url: Url) -> Result<T> {
-        match serde_json::from_str(&self.fetch(&url)?) {
-            Ok(contents) => Ok(contents),
-            Err(e) => Err(Error::data_error_with_url(&e, url.into_string()))
-        }
-    }
-
+    /// Fetch the HTTP response body from the webservice
     fn fetch(&self, url: &Url) -> Result<String>;
 }
