@@ -10,6 +10,8 @@ pub enum CliError {
     InputError(String),
     OutputError(String),
     RestLibError(Box<dyn StdError>),
+    #[allow(unused)]
+    UnknownError(String),
 }
 
 impl CliError {
@@ -19,6 +21,11 @@ impl CliError {
 
     pub fn output_error<S: Into<String>>(description: S) -> Self {
         CliError::OutputError(description.into())
+    }
+
+    #[allow(unused)]
+    pub fn unknown_error<S: Into<String>>(description: S) -> Self {
+        CliError::UnknownError(description.into())
     }
 }
 
@@ -30,6 +37,7 @@ impl fmt::Display for CliError {
             CliError::InputError(e) => write!(f, "{}", e),
             CliError::OutputError(e) => write!(f, "{}", e),
             CliError::RestLibError(ref e) => write!(f, "{}", e),
+            CliError::UnknownError(e) => write!(f, "{}", e),
         }
     }
 }

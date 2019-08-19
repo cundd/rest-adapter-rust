@@ -115,23 +115,8 @@ fn configure_logging(matches: &ArgMatches) -> Result<()> {
 mod tests {
     extern crate serde;
 
-    use rest_adapter::*;
     use serde::Deserialize;
-
-    /// A HttpClient implementation that will always return the contents of the file
-    /// rest_adapter_test/resources/test-persons.json
-    #[derive(Clone)]
-    struct TestHttpClient {}
-
-    impl HttpClientTrait for TestHttpClient {
-        fn new() -> Self {
-            TestHttpClient {}
-        }
-
-        fn fetch(&self, _url: &Url) -> Result<String, Error> {
-            Ok(include_str!("../../tests/resources/test-persons.json").to_owned())
-        }
-    }
+    use super::*;
 
     #[derive(Deserialize, Debug)]
     #[allow(unused)]
@@ -139,19 +124,50 @@ mod tests {
         name: String
     }
 
-    fn run() -> Result<Vec<Person>> {
-        let config = AdapterConfiguration::from_url_and_client("http://base.url.tld/rest/", TestHttpClient {})?;
+    /// Address uses references which are currently not supported by the adapter
+    #[derive(Deserialize, Debug)]
+    #[allow(unused)]
+    struct Address<'a> {
+        street: &'a str,
+        zip: u8,
+        city: &'a str,
+    }
+
+    fn find_all_persons() -> Result<Vec<Person>> {
+        let config = AdapterConfiguration::from_url_and_client(
+            "http://base.url.tld/rest/",
+            FixtureClient::new().set_data(include_str!("../../tests/resources/test-persons.json").to_owned()),
+        )?;
         let rd = RestAdapter::new(config);
 
-        rd.find_all::<Person>("Vendor-RealEstate-Person")
+        Ok(rd.find_all::<Person>("Vendor-RealEstate-Person")?)
     }
 
     #[test]
-    fn test_find_all() {
-        let result = run();
+    fn test_find_all_persons() {
+        let result = find_all_persons();
         assert!(result.is_ok(), "{}", result.unwrap_err());
         let persons = result.unwrap();
         assert_eq!(4, persons.len());
         assert_eq!("Daniel", persons[0].name);
+    }
+
+    fn find_all_addresses<'a>() -> Result<Vec<Address<'a>>> {
+        let config = AdapterConfiguration::from_url_and_client(
+            "http://base.url.tld/rest/",
+            FixtureClient::new().set_data("...".to_owned()),
+        )?;
+        #[allow(unused)]
+            let rd = RestAdapter::new(config);
+
+        // rd.find_all::<Address>("Vendor-RealEstate-Address")
+
+        Err(CliError::unknown_error("Deserializing is only supported for types that implement `DeserializeOwned`"))
+    }
+
+    #[test]
+    fn test_find_all_addresses() {
+        let result = find_all_addresses();
+        assert!(result.is_err(), "{}", result.unwrap_err());
     }
 }

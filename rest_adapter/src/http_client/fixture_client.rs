@@ -10,8 +10,15 @@ pub struct FixtureClient {
 
 impl FixtureClient {
     /// Return a new instance that will return `data` when [`fetch`] is called
-    pub fn with_data(&self, data: String) -> Self {
+    pub fn with_data(data: String) -> Self {
         Self { data }
+    }
+
+    /// Set the `data` that will be returned when [`fetch`] is called
+    pub fn set_data(mut self, data: String) -> Self {
+        self.data = data;
+
+        self
     }
 }
 
