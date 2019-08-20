@@ -2,6 +2,9 @@ use crate::error::*;
 use crate::ID;
 use serde::de::DeserializeOwned;
 
+/// Trait for Adapter implementations
+///
+/// [`RestAdapter`] provides the default implementation
 pub trait AdapterTrait {
     /// Fetch all records of the given `resource_type`
     ///

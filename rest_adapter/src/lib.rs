@@ -14,8 +14,6 @@ mod factory;
 mod http_client;
 mod prelude_internal;
 
-//use uri_builder::UriBuilder;
-
 pub use prelude_internal::*;
 pub use content::Content;
 pub use page::Page;
